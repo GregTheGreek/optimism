@@ -245,6 +245,46 @@ jobs:
           command: |
             ./ops/scripts/ci-docker-tag-op-stack-release.sh <<parameters.registry>>/<<parameters.repo>> $CIRCLE_TAG $CIRCLE_SHA1
 
+  atst-tests:
+    docker:
+      - image: ethereumoptimism/ci-builder:latest
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace: { at: '.' }
+      - check-changed:
+          patterns: atst,contracts-periphery
+      - build:
+          name: build
+          command: yarn build
+          working_directory: packages/atst
+      - run:
+          name: typecheck
+          command: yarn typecheck
+          working_directory: packages/atst
+      - run:
+          name: lint
+          command: yarn lint:check
+          working_directory: packages/atst
+      - run:
+          name: print forge version
+          command: forge --version
+          working_directory: packages/atst
+      - run:
+          name: print anvil version
+          command: anvil --version
+          working_directory: packages/atst
+      - run:
+          name: start anvil
+          background: true
+          command: anvil --fork-url="${ANVIL_L2_FORK_URL:-https://mainnet.optimism.io}"
+          working_directory: packages/atst
+      - run:
+          name: test
+          command: yarn test
+          no_output_timeout: 5m
+          working_directory: packages/atst
+
   contracts-bedrock-tests:
     docker:
       - image: ethereumoptimism/ci-builder:latest
