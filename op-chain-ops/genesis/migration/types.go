@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum-optimism/optimism/l2geth/log"
+	"github.com/ethereum/go-ethereum/log"
 	"os"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
