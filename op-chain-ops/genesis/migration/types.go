@@ -2,7 +2,9 @@ package migration
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/l2geth/log"
 	"os"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
@@ -133,6 +135,10 @@ func (m *MigrationData) ToWithdrawals() (crossdomain.DangerousUnfilteredWithdraw
 	}
 	for i, msg := range m.EvmMessages {
 		wd, err := msg.ToLegacyWithdrawal()
+		if errors.Is(err, crossdomain.ErrWithdrawalDataTooShort) {
+			log.Warn("ignoring short withdrawal", "who", msg.Who, "data", msg.Msg)
+			continue
+		}
 		if err != nil {
 			return nil, fmt.Errorf("error serializing EVM message at index %d: %w", i, err)
 		}

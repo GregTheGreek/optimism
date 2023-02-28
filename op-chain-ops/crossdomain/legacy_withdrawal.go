@@ -15,6 +15,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+var ErrWithdrawalDataTooShort = errors.New("withdrawal data too short")
+
 // LegacyWithdrawal represents a pre bedrock upgrade withdrawal.
 type LegacyWithdrawal struct {
 	// MessageSender is the caller of the message passer
@@ -63,7 +65,7 @@ func (w *LegacyWithdrawal) Decode(data []byte) error {
 	if len(data) < len(predeploys.L2CrossDomainMessengerAddr)+4 {
 		j, _ := json.MarshalIndent(w, "", "  ")
 		fmt.Println(string(j))
-		return fmt.Errorf("withdrawal data too short: %d", len(data))
+		return ErrWithdrawalDataTooShort
 	}
 
 	selector := crypto.Keccak256([]byte("relayMessage(address,address,bytes,uint256)"))[0:4]
