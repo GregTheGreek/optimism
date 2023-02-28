@@ -76,6 +76,7 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 		_, okValid := validSlotsInp[slot]
 		_, okInvalid := invalidSlotsInp[slot]
 		if !okValid && !okInvalid {
+			log.Info("missing storage slot", "slot", slot.String())
 			missing++
 		}
 	}
