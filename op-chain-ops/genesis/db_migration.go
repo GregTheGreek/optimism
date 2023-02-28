@@ -118,6 +118,8 @@ func MigrateDB(ldb ethdb.Database, config *DeployConfig, l1Block *types.Block, m
 		return nil, fmt.Errorf("cannot serialize withdrawals: %w", err)
 	}
 
+	log.Info("Read withdrawals from witness data", "unfiltered", len(unfilteredWithdrawals), "invalid")
+
 	// We now need to check that we have all of the withdrawals that we expect to have. An error
 	// will be thrown if there are any missing messages, and any extra messages will be removed.
 	var filteredWithdrawals crossdomain.SafeFilteredWithdrawals
