@@ -2,12 +2,11 @@ package ether
 
 import (
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
 	"math/big"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis/migration"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/log"
@@ -31,7 +30,7 @@ var (
 
 func MigrateLegacyETH(db *state.StateDB, addresses []common.Address, chainID int, noCheck bool) error {
 	// Chain params to use for integrity checking.
-	params := migration.ParamsByChainID[chainID]
+	params := crossdomain.ParamsByChainID[chainID]
 	if params == nil {
 		return fmt.Errorf("no chain params for %d", chainID)
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,16 +19,23 @@ var (
 
 // PreCheckWithdrawals checks that the given list of withdrawals represents all withdrawals made
 // in the legacy system and filters out any extra withdrawals not included in the legacy system.
-func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithdrawals) (SafeFilteredWithdrawals, error) {
+func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithdrawals, invalidMessages []*SentMessage) (SafeFilteredWithdrawals, error) {
 	// Convert each withdrawal into a storage slot, and build a map of those slots.
-	slotsInp := make(map[common.Hash]*LegacyWithdrawal)
+	validSlotsInp := make(map[common.Hash]*LegacyWithdrawal)
 	for _, wd := range withdrawals {
 		slot, err := wd.StorageSlot()
 		if err != nil {
 			return nil, fmt.Errorf("cannot check withdrawals: %w", err)
 		}
 
-		slotsInp[slot] = wd
+		validSlotsInp[slot] = wd
+	}
+
+	// Convert each invalid message into a storage slot, and build a map of those slots.
+	invalidSlotsInp := make(map[common.Hash]*SentMessage)
+	for _, msg := range invalidMessages {
+		slot := crypto.Keccak256Hash(msg.Msg, msg.Who.Bytes())
+		invalidSlotsInp[slot] = msg
 	}
 
 	// Build a mapping of the slots of all messages actually sent in the legacy system.
@@ -63,8 +71,9 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 
 	// Iterate over the list of actual slots and check that we have an input message for each one.
 	for slot := range slotsAct {
-		_, ok := slotsInp[slot]
-		if !ok {
+		_, okValid := validSlotsInp[slot]
+		_, okInvalid := invalidSlotsInp[slot]
+		if !okValid && !okInvalid {
 			return nil, ErrMissingSlotInWitness
 		}
 	}
@@ -72,14 +81,14 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 	// Iterate over the list of input messages and check that we have a known slot for each one.
 	// We'll filter out any extra messages that are not in the legacy system.
 	filtered := make(SafeFilteredWithdrawals, 0)
-	for slot := range slotsInp {
+	for slot := range validSlotsInp {
 		_, ok := slotsAct[slot]
 		if !ok {
 			log.Info("filtering out unknown input message", "slot", slot.String())
 			continue
 		}
 
-		wd := slotsInp[slot]
+		wd := validSlotsInp[slot]
 		if wd.MessageSender != predeploys.L2CrossDomainMessengerAddr {
 			log.Info("filtering out message from sender other than the L2XDM", "sender", wd.MessageSender)
 			continue

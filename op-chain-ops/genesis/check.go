@@ -19,7 +19,6 @@ import (
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis/migration"
 	"github.com/ethereum-optimism/optimism/op-node/rollup/derive"
 )
 
@@ -89,7 +88,7 @@ var (
 // PostCheckMigratedDB will check that the migration was performed correctly
 func PostCheckMigratedDB(
 	ldb ethdb.Database,
-	migrationData migration.MigrationData,
+	migrationData crossdomain.MigrationData,
 	l1XDM *common.Address,
 	l1ChainID uint64,
 	finalSystemOwner common.Address,
@@ -468,7 +467,7 @@ func PostCheckL1Block(db vm.StateDB, info *derive.L1BlockInfo) error {
 	return nil
 }
 
-func CheckWithdrawalsAfter(db vm.StateDB, data migration.MigrationData, l1CrossDomainMessenger *common.Address) error {
+func CheckWithdrawalsAfter(db vm.StateDB, data crossdomain.MigrationData, l1CrossDomainMessenger *common.Address) error {
 	wds, err := data.ToWithdrawals()
 	if err != nil {
 		return err

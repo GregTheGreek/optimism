@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"math/big"
 	"os"
 	"strings"
@@ -22,7 +23,6 @@ import (
 	"github.com/ethereum-optimism/optimism/op-bindings/hardhat"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis/migration"
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/urfave/cli"
@@ -118,28 +118,28 @@ func main() {
 				return err
 			}
 
-			ovmAddresses, err := migration.NewAddresses(ctx.String("ovm-addresses"))
+			ovmAddresses, err := crossdomain.NewAddresses(ctx.String("ovm-addresses"))
 			if err != nil {
 				return err
 			}
-			evmAddresess, err := migration.NewAddresses(ctx.String("evm-addresses"))
+			evmAddresess, err := crossdomain.NewAddresses(ctx.String("evm-addresses"))
 			if err != nil {
 				return err
 			}
-			ovmAllowances, err := migration.NewAllowances(ctx.String("ovm-allowances"))
+			ovmAllowances, err := crossdomain.NewAllowances(ctx.String("ovm-allowances"))
 			if err != nil {
 				return err
 			}
-			ovmMessages, err := migration.NewSentMessage(ctx.String("ovm-messages"))
+			ovmMessages, err := crossdomain.NewSentMessage(ctx.String("ovm-messages"))
 			if err != nil {
 				return err
 			}
-			evmMessages, err := migration.NewSentMessage(ctx.String("evm-messages"))
+			evmMessages, err := crossdomain.NewSentMessage(ctx.String("evm-messages"))
 			if err != nil {
 				return err
 			}
 
-			migrationData := migration.MigrationData{
+			migrationData := crossdomain.MigrationData{
 				OvmAddresses:  ovmAddresses,
 				EvmAddresses:  evmAddresess,
 				OvmAllowances: ovmAllowances,

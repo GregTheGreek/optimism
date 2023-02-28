@@ -5,12 +5,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"io"
 	"strings"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis/migration"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -105,7 +104,7 @@ func IterateAllowanceList(r io.Reader, cb AllowanceCB) error {
 func IterateMintEvents(db ethdb.Database, headNum uint64, cb AddressCBWithHead, progressCb func(uint64)) error {
 	for headNum > 0 {
 		hash := rawdb.ReadCanonicalHash(db, headNum)
-		receipts, err := migration.ReadLegacyReceipts(db, hash, headNum)
+		receipts, err := crossdomain.ReadLegacyReceipts(db, hash, headNum)
 		if err != nil {
 			return err
 		}

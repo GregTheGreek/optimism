@@ -1,13 +1,11 @@
-package migration
+package crossdomain
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/log"
 	"os"
 
-	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -42,12 +40,12 @@ func NewSentMessage(path string) ([]*SentMessage, error) {
 // ToLegacyWithdrawal will convert a SentMessageJSON to a LegacyWithdrawal
 // struct. This is useful because the LegacyWithdrawal struct has helper
 // functions on it that can compute the withdrawal hash and the storage slot.
-func (s *SentMessage) ToLegacyWithdrawal() (*crossdomain.LegacyWithdrawal, error) {
+func (s *SentMessage) ToLegacyWithdrawal() (*LegacyWithdrawal, error) {
 	data := make([]byte, len(s.Who)+len(s.Msg))
 	copy(data, s.Msg)
 	copy(data[len(s.Msg):], s.Who[:])
 
-	var w crossdomain.LegacyWithdrawal
+	var w LegacyWithdrawal
 	if err := w.Decode(data); err != nil {
 		j, _ := json.MarshalIndent(s, "", "  ")
 		fmt.Println(string(j))
@@ -121,30 +119,26 @@ type MigrationData struct {
 	EvmMessages []*SentMessage
 }
 
-func (m *MigrationData) ToWithdrawals() (crossdomain.DangerousUnfilteredWithdrawals, error) {
-	messages := make(crossdomain.DangerousUnfilteredWithdrawals, 0)
+func (m *MigrationData) ToWithdrawals() (DangerousUnfilteredWithdrawals, []*SentMessage, error) {
+	messages := make(DangerousUnfilteredWithdrawals, 0)
+	invalidMessages := make([]*SentMessage, 0)
 	for _, msg := range m.OvmMessages {
 		wd, err := msg.ToLegacyWithdrawal()
 		if err != nil {
-			return nil, err
+			return nil, nil, fmt.Errorf("error serializing OVM message: %w", err)
 		}
 		messages = append(messages, wd)
-		if err != nil {
-			return nil, fmt.Errorf("error serializing OVM message: %w", err)
-		}
 	}
-	for i, msg := range m.EvmMessages {
+	for _, msg := range m.EvmMessages {
 		wd, err := msg.ToLegacyWithdrawal()
-		if errors.Is(err, crossdomain.ErrWithdrawalDataTooShort) {
-			log.Warn("Ignoring mal-formed withdrawal", "who", msg.Who, "data", msg.Msg)
+		if err != nil {
+			log.Warn("Discovered mal-formed withdrawal", "who", msg.Who, "data", msg.Msg)
+			invalidMessages = append(invalidMessages, msg)
 			continue
 		}
-		if err != nil {
-			return nil, fmt.Errorf("error serializing EVM message at index %d: %w", i, err)
-		}
 		messages = append(messages, wd)
 	}
-	return messages, nil
+	return messages, invalidMessages, nil
 }
 
 func (m *MigrationData) Addresses() []common.Address {

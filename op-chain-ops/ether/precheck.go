@@ -2,11 +2,10 @@ package ether
 
 import (
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"math/big"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis/migration"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -17,9 +16,9 @@ import (
 // slots in the LegacyERC20ETH contract. We don't have to filter out extra addresses like we do for
 // withdrawals because we'll simply carry the balance of a given address to the new system, if the
 // account is extra then it won't have any balance and nothing will happen.
-func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.Address, allowances []*migration.Allowance, chainID int, noCheck bool) ([]common.Address, error) {
+func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.Address, allowances []*crossdomain.Allowance, chainID int, noCheck bool) ([]common.Address, error) {
 	// Chain params to use for integrity checking.
-	params := migration.ParamsByChainID[chainID]
+	params := crossdomain.ParamsByChainID[chainID]
 	if params == nil {
 		return nil, fmt.Errorf("no chain params for %d", chainID)
 	}
