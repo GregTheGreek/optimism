@@ -2,6 +2,7 @@ package ether
 
 import (
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
 	"math/big"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
@@ -47,7 +48,7 @@ func MigrateLegacyETH(db *state.StateDB, addresses []common.Address, chainID int
 	// Migrate the legacy ETH to ETH.
 	log.Info("Migrating legacy ETH to ETH", "num-accounts", len(addresses))
 	totalMigrated := new(big.Int)
-	logAccountProgress := ProgressLogger(1000, "imported accounts")
+	logAccountProgress := util.ProgressLogger(1000, "imported accounts")
 	for addr := range deduped {
 		// No accounts should have a balance in state. If they do, bail.
 		if db.GetBalance(addr).Sign() > 0 {
