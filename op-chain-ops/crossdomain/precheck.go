@@ -71,17 +71,16 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 
 	// Iterate over the list of actual slots and check that we have an input message for each one.
 
-	var isMissing bool
-
+	var missing int
 	for slot := range slotsAct {
 		_, okValid := validSlotsInp[slot]
 		_, okInvalid := invalidSlotsInp[slot]
 		if !okValid && !okInvalid {
-			isMissing = true
-			log.Info("missing storage slot in witness data", "slot", slot.String())
+			missing++
 		}
 	}
-	if isMissing {
+	if missing > 0 {
+		log.Info("missing storage slots in witness data", "count", missing)
 		return nil, ErrMissingSlotInWitness
 	}
 
