@@ -138,6 +138,14 @@ func main() {
 			if err != nil {
 				return err
 			}
+			log.Info(
+				"Loaded witness data",
+				"ovmAddresses", len(ovmAddresses),
+				"evmAddresses", len(evmAddresess),
+				"ovmAllowances", len(ovmAllowances),
+				"ovmMessages", len(ovmMessages),
+				"evmMessages", len(evmMessages),
+			)
 
 			migrationData := crossdomain.MigrationData{
 				OvmAddresses:  ovmAddresses,
