@@ -129,10 +129,10 @@ func (m *MigrationData) ToWithdrawals() (crossdomain.DangerousUnfilteredWithdraw
 			return nil, fmt.Errorf("error serializing OVM message: %w", err)
 		}
 	}
-	for _, msg := range m.EvmMessages {
+	for i, msg := range m.EvmMessages {
 		wd, err := msg.ToLegacyWithdrawal()
 		if err != nil {
-			return nil, fmt.Errorf("error serializing EVM message: %w", err)
+			return nil, fmt.Errorf("error serializing EVM message at index %d: %w", i, err)
 		}
 		messages = append(messages, wd)
 	}
