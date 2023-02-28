@@ -3,6 +3,7 @@ package crossdomain
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/ether"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum/go-ethereum/common"
@@ -33,7 +34,9 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 	var count int
 	var innerErr error
 	slotsAct := make(map[common.Hash]bool)
+	progress := ether.ProgressLogger(1000, "Iterating legacy messages")
 	err := db.ForEachStorage(predeploys.LegacyMessagePasserAddr, func(key, value common.Hash) bool {
+		progress()
 		// When a message is inserted into the LegacyMessagePasser, it is stored with the value
 		// of the ABI encoding of "true". Although there should not be any other storage slots, we
 		// can safely ignore anything that is not "true".

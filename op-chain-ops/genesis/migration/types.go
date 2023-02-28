@@ -136,7 +136,7 @@ func (m *MigrationData) ToWithdrawals() (crossdomain.DangerousUnfilteredWithdraw
 	for i, msg := range m.EvmMessages {
 		wd, err := msg.ToLegacyWithdrawal()
 		if errors.Is(err, crossdomain.ErrWithdrawalDataTooShort) {
-			log.Warn("ignoring short withdrawal", "who", msg.Who, "data", msg.Msg)
+			log.Warn("Ignoring mal-formed withdrawal", "who", msg.Who, "data", msg.Msg)
 			continue
 		}
 		if err != nil {
