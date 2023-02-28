@@ -60,9 +60,9 @@ func (w *LegacyWithdrawal) Encode() ([]byte, error) {
 
 // Decode will decode a serialized LegacyWithdrawal
 func (w *LegacyWithdrawal) Decode(data []byte) error {
-	j, _ := json.MarshalIndent(w, "", "  ")
-	fmt.Println(string(j))
 	if len(data) < len(predeploys.L2CrossDomainMessengerAddr)+4 {
+		j, _ := json.MarshalIndent(w, "", "  ")
+		fmt.Println(string(j))
 		return fmt.Errorf("withdrawal data too short: %d", len(data))
 	}
 
