@@ -468,7 +468,7 @@ func PostCheckL1Block(db vm.StateDB, info *derive.L1BlockInfo) error {
 }
 
 func CheckWithdrawalsAfter(db vm.StateDB, data crossdomain.MigrationData, l1CrossDomainMessenger *common.Address) error {
-	wds, err := data.ToWithdrawals()
+	wds, _, err := data.ToWithdrawals()
 	if err != nil {
 		return err
 	}
