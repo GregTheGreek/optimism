@@ -29,9 +29,10 @@ program
         addrs.push(line.split('|')[1].replace('\r', ''))
       } else if (line.startsWith('MSG')) {
         const msg = '0x' + line.split('|')[2].replace('\r', '')
+        const parsed = iface.decodeFunctionData('passMessageToL1', msg)
         msgs.push({
           who: line.split('|')[1],
-          msg,
+          msg: parsed._message,
         })
       }
     }
