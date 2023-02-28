@@ -47,7 +47,7 @@ func (s *SentMessage) ToLegacyWithdrawal() (*crossdomain.LegacyWithdrawal, error
 
 	var w crossdomain.LegacyWithdrawal
 	if err := w.Decode(data); err != nil {
-		j, _ := json.MarshalIndent(w, "", "  ")
+		j, _ := json.MarshalIndent(s, "", "  ")
 		fmt.Println(string(j))
 		return nil, err
 	}
