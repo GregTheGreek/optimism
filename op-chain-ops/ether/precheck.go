@@ -2,8 +2,9 @@ package ether
 
 import (
 	"fmt"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"math/big"
+
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum/go-ethereum/common"

@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/db"
 	"github.com/mattn/go-isatty"
@@ -47,11 +48,6 @@ func main() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "evm-addresses",
-				Usage:    "Path to evm-addresses.json",
-				Required: true,
-			},
-			&cli.StringFlag{
 				Name:     "ovm-allowances",
 				Usage:    "Path to ovm-allowances.json",
 				Required: true,
@@ -62,8 +58,8 @@ func main() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "evm-messages",
-				Usage:    "Path to evm-messages.json",
+				Name:     "witness-file",
+				Usage:    "Path to witness file",
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -122,26 +118,23 @@ func main() {
 			if err != nil {
 				return err
 			}
-			evmAddresess, err := crossdomain.NewAddresses(ctx.String("evm-addresses"))
-			if err != nil {
-				return err
-			}
 			ovmAllowances, err := crossdomain.NewAllowances(ctx.String("ovm-allowances"))
 			if err != nil {
 				return err
 			}
-			ovmMessages, err := crossdomain.NewSentMessage(ctx.String("ovm-messages"))
+			ovmMessages, err := crossdomain.NewSentMessageFromJSON(ctx.String("ovm-messages"))
 			if err != nil {
 				return err
 			}
-			evmMessages, err := crossdomain.NewSentMessage(ctx.String("evm-messages"))
+			evmMessages, evmAddresses, err := crossdomain.ReadWitnessData(ctx.String("witness-file"))
 			if err != nil {
 				return err
 			}
+
 			log.Info(
 				"Loaded witness data",
 				"ovmAddresses", len(ovmAddresses),
-				"evmAddresses", len(evmAddresess),
+				"evmAddresses", len(evmAddresses),
 				"ovmAllowances", len(ovmAllowances),
 				"ovmMessages", len(ovmMessages),
 				"evmMessages", len(evmMessages),
@@ -149,7 +142,7 @@ func main() {
 
 			migrationData := crossdomain.MigrationData{
 				OvmAddresses:  ovmAddresses,
-				EvmAddresses:  evmAddresess,
+				EvmAddresses:  evmAddresses,
 				OvmAllowances: ovmAllowances,
 				OvmMessages:   ovmMessages,
 				EvmMessages:   evmMessages,

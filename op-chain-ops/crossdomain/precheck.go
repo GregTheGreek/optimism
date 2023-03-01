@@ -3,10 +3,9 @@ package crossdomain
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
-	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/log"
@@ -19,7 +18,7 @@ var (
 
 // PreCheckWithdrawals checks that the given list of withdrawals represents all withdrawals made
 // in the legacy system and filters out any extra withdrawals not included in the legacy system.
-func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithdrawals, invalidMessages []*SentMessage) (SafeFilteredWithdrawals, error) {
+func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithdrawals, invalidMessages []InvalidMessage) (SafeFilteredWithdrawals, error) {
 	// Convert each withdrawal into a storage slot, and build a map of those slots.
 	validSlotsInp := make(map[common.Hash]*LegacyWithdrawal)
 	for _, wd := range withdrawals {
@@ -32,9 +31,12 @@ func PreCheckWithdrawals(db *state.StateDB, withdrawals DangerousUnfilteredWithd
 	}
 
 	// Convert each invalid message into a storage slot, and build a map of those slots.
-	invalidSlotsInp := make(map[common.Hash]*SentMessage)
+	invalidSlotsInp := make(map[common.Hash]InvalidMessage)
 	for _, msg := range invalidMessages {
-		slot := crypto.Keccak256Hash(msg.Msg, msg.Who.Bytes())
+		slot, err := msg.StorageSlot()
+		if err != nil {
+			return nil, fmt.Errorf("cannot check invalid messages: %w", err)
+		}
 		invalidSlotsInp[slot] = msg
 	}
 

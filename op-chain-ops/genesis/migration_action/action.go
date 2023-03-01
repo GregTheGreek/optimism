@@ -2,9 +2,10 @@ package migration_action
 
 import (
 	"context"
-	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 	"math/big"
 	"path/filepath"
+
+	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/genesis"
 	"github.com/ethereum/go-ethereum/core/rawdb"
@@ -42,11 +43,11 @@ func Migrate(cfg *Config) (*genesis.MigrationResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	ovmMessages, err := crossdomain.NewSentMessage(cfg.OVMMessagesPath)
+	ovmMessages, err := crossdomain.NewSentMessageFromJSON(cfg.OVMMessagesPath)
 	if err != nil {
 		return nil, err
 	}
-	evmMessages, err := crossdomain.NewSentMessage(cfg.EVMMessagesPath)
+	evmMessages, err := crossdomain.NewSentMessageFromJSON(cfg.EVMMessagesPath)
 	if err != nil {
 		return nil, err
 	}

@@ -766,7 +766,7 @@ func newWithdrawals(ctx *cli.Context, l1ChainID *big.Int) ([]*crossdomain.Legacy
 	evmMsgs := ctx.String("evm-messages")
 
 	log.Debug("Migration data", "ovm-path", ovmMsgs, "evm-messages", evmMsgs)
-	ovmMessages, err := crossdomain.NewSentMessage(ovmMsgs)
+	ovmMessages, err := crossdomain.NewSentMessageFromJSON(ovmMsgs)
 	if err != nil {
 		return nil, err
 	}
@@ -778,7 +778,7 @@ func newWithdrawals(ctx *cli.Context, l1ChainID *big.Int) ([]*crossdomain.Legacy
 		ovmMessages = []*crossdomain.SentMessage{}
 	}
 
-	evmMessages, err := crossdomain.NewSentMessage(evmMsgs)
+	evmMessages, err := crossdomain.NewSentMessageFromJSON(evmMsgs)
 	if err != nil {
 		return nil, err
 	}
