@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum-optimism/optimism/op-chain-ops/crossdomain"
+	"github.com/ethereum-optimism/optimism/op-chain-ops/util"
 
 	"github.com/ethereum-optimism/optimism/op-bindings/predeploys"
 	"github.com/ethereum/go-ethereum/common"
@@ -53,7 +54,10 @@ func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.
 	// slots that we know we can ignore (totalSupply, name, symbol).
 	var count int
 	slotsAct := make(map[common.Hash]common.Hash)
+	progress := util.ProgressLogger(1000, "Read OVM_ETH storage slot")
 	err := db.ForEachStorage(predeploys.LegacyERC20ETHAddr, func(key, value common.Hash) bool {
+		progress()
+
 		// We can safely ignore specific slots (totalSupply, name, symbol).
 		if ignoredSlots[key] {
 			return true
