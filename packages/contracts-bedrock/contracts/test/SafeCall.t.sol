@@ -81,6 +81,8 @@ contract SafeCall_call_Test is CommonTest {
         SimpleSafeCaller caller = new SimpleSafeCaller();
 
         for (uint64 i = 5000; i < 50000; i++) {
+            uint256 snapshot = vm.snapshot();
+
             // 26,069 is the exact amount of gas required to make the safe call
             // successfully.
             if (i < 26069) {
@@ -94,6 +96,8 @@ contract SafeCall_call_Test is CommonTest {
                 );
                 assertTrue(caller.makeSafeCall(i, 25000));
             }
+
+            assertTrue(vm.revertTo(snapshot));
         }
     }
 
@@ -101,6 +105,8 @@ contract SafeCall_call_Test is CommonTest {
         SimpleSafeCaller caller = new SimpleSafeCaller();
 
         for (uint256 i = 15_200_000; i < 15_300_000; i++) {
+            uint256 snapshot = vm.snapshot();
+
             // 15,238,767 is the exact amount of gas required to make the safe call
             // successfully.
             if (i < 15_238_767) {
@@ -114,6 +120,8 @@ contract SafeCall_call_Test is CommonTest {
                 );
                 assertTrue(caller.makeSafeCall(uint64(i), 15_000_000));
             }
+
+            assertTrue(vm.revertTo(snapshot));
         }
     }
 }
