@@ -254,7 +254,7 @@ jobs:
       - attach_workspace: { at: '.' }
       - check-changed:
           patterns: atst,contracts-periphery
-      - build:
+      - run:
           name: build
           command: yarn build
           working_directory: packages/atst
@@ -916,6 +916,9 @@ workflows:
           requires:
             - yarn-monorepo
       - contracts-bedrock-tests:
+          requires:
+            - yarn-monorepo
+      - atst-tests:
           requires:
             - yarn-monorepo
       - op-bindings-build:
