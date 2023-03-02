@@ -492,13 +492,13 @@ jobs:
       - run:
           name: start anvil
           background: true
-          command: anvil --fork-url="${ANVIL_L2_FORK_URL:-https://mainnet.optimism.io}"
+          command: anvil --fork-url="${ANVIL_L2_FORK_URL:-https://mainnet.optimism.io}" --port 8546
           working_directory: packages/atst
       - run:
-          name: wait for anvil
+          name: make sure anvil is up
           # make sure anvil is up
           command: |
-            sleep 5 && cast block-number --rpc-url http://localhost:8545
+            sleep 5 && cast block-number --rpc-url http://localhost:8546
           working_directory: packages/atst
       - run:
           name: test
