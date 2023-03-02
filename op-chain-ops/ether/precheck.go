@@ -79,13 +79,16 @@ func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.
 	// keep track of the total balance to be migrated and throw if the total supply exceeds the
 	// expected supply delta.
 	totalFound := new(big.Int)
+	var unknown bool
 	for slot := range slotsAct {
 		slotType, ok := slotsInp[slot]
 		if !ok {
 			if noCheck {
 				log.Error("ignoring unknown storage slot in state", "slot", slot)
 			} else {
-				log.Crit("unknown storage slot in state: %s", slot)
+				unknown = true
+				log.Error("unknown storage slot in state: %s", slot)
+				continue
 			}
 		}
 
@@ -105,6 +108,9 @@ func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.
 				log.Crit("unknown slot type: %d", slotType)
 			}
 		}
+	}
+	if unknown {
+		log.Crit("unknown storage slots in state")
 	}
 
 	// Verify the supply delta. Recorded total supply in the LegacyERC20ETH contract may be higher
