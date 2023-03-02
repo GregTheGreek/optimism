@@ -281,17 +281,9 @@ jobs:
           working_directory: packages/atst
       - run:
           name: wait for anvil
+          # make sure anvil is up
           command: |
-            max_retry=5
-            counter=0
-            until cast block-number --rpc-url http://localhost:8545
-            do
-               sleep 1
-               [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
-               echo "Trying again. Try #$counter"
-               ((counter++))
-            done
-            echo ready
+            sleep 5 && cast block-number --rpc-url http://localhost:8545
           working_directory: packages/atst
       - run:
           name: test
