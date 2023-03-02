@@ -84,10 +84,10 @@ func PreCheckBalances(ldb ethdb.Database, db *state.StateDB, addresses []common.
 		slotType, ok := slotsInp[slot]
 		if !ok {
 			if noCheck {
-				log.Error("ignoring unknown storage slot in state", "slot", slot)
+				log.Error("ignoring unknown storage slot in state", "slot", slot.String())
 			} else {
 				unknown = true
-				log.Error("unknown storage slot in state: %s", slot)
+				log.Error("unknown storage slot in state", "slot", slot.String())
 				continue
 			}
 		}
