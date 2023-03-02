@@ -5,7 +5,7 @@ orbs:
   gcp-cli: circleci/gcp-cli@3.0.1
 commands:
   gcp-oidc-authenticate:
-    description: "Authenticate with GCP using a CircleCI OIDC token."
+    description: 'Authenticate with GCP using a CircleCI OIDC token.'
     parameters:
       project_id:
         type: env_var_name
@@ -27,7 +27,7 @@ commands:
         default: /home/circleci/oidc_token.json
     steps:
       - run:
-          name: "Create OIDC credential configuration"
+          name: 'Create OIDC credential configuration'
           command: |
             # Store OIDC token in temp file
             echo $CIRCLE_OIDC_TOKEN > << parameters.oidc_token_file_path >>
@@ -38,21 +38,21 @@ commands:
                 --service-account="${<< parameters.service_account_email >>}" \
                 --credential-source-file=<< parameters.oidc_token_file_path >>
       - run:
-          name: "Authenticate with GCP using OIDC"
+          name: 'Authenticate with GCP using OIDC'
           command: |
             # Configure gcloud to leverage the generated credential configuration
             gcloud auth login --brief --cred-file "<< parameters.gcp_cred_config_file_path >>"
             # Configure ADC
             echo "export GOOGLE_APPLICATION_CREDENTIALS='<< parameters.gcp_cred_config_file_path >>'" | tee -a "$BASH_ENV"
   check-changed:
-    description: "Conditionally halts a step if certain modules change"
+    description: 'Conditionally halts a step if certain modules change'
     parameters:
       patterns:
         type: string
-        description: "Comma-separated list of dependencies"
+        description: 'Comma-separated list of dependencies'
     steps:
       - run:
-          name: "Check for changes"
+          name: 'Check for changes'
           command: |
             cd ops/check-changed
             pip3 install -r requirements.txt
@@ -76,19 +76,19 @@ jobs:
           name: Build monorepo
           command: yarn build
       - persist_to_workspace:
-          root: "."
+          root: '.'
           paths:
-            - "node_modules"
-            - "packages/*/node_modules"
-            - "packages/*/dist"
-            - "packages/*/artifacts"
-            - "packages/contracts/src/contract-artifacts.ts"
-            - "packages/contracts/src/contract-deployed-artifacts.ts"
-            - "packages/contracts/chugsplash"
-            - "packages/contracts/L1"
-            - "packages/contracts/L2"
-            - "packages/contracts/libraries"
-            - "packages/contracts/standards"
+            - 'node_modules'
+            - 'packages/*/node_modules'
+            - 'packages/*/dist'
+            - 'packages/*/artifacts'
+            - 'packages/contracts/src/contract-artifacts.ts'
+            - 'packages/contracts/src/contract-deployed-artifacts.ts'
+            - 'packages/contracts/chugsplash'
+            - 'packages/contracts/L1'
+            - 'packages/contracts/L2'
+            - 'packages/contracts/libraries'
+            - 'packages/contracts/standards'
 
   docker-build:
     environment:
@@ -109,11 +109,11 @@ jobs:
       registry:
         description: Docker registry
         type: string
-        default: "us-docker.pkg.dev"
+        default: 'us-docker.pkg.dev'
       repo:
         description: Docker repo
         type: string
-        default: "oplabs-tools-artifacts/images"
+        default: 'oplabs-tools-artifacts/images'
     machine:
       image: ubuntu-2204:2022.07.1
       resource_class: xlarge
@@ -144,7 +144,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp/docker_images
           paths:
-            - "."
+            - '.'
 
   docker-publish:
     parameters:
@@ -157,11 +157,11 @@ jobs:
       registry:
         description: Docker registry
         type: string
-        default: "us-docker.pkg.dev"
+        default: 'us-docker.pkg.dev'
       repo:
         description: Docker repo
         type: string
-        default: "oplabs-tools-artifacts/images"
+        default: 'oplabs-tools-artifacts/images'
     machine:
       image: ubuntu-2204:2022.07.1
       resource_class: xlarge
@@ -208,11 +208,11 @@ jobs:
       registry:
         description: Docker registry
         type: string
-        default: "us-docker.pkg.dev"
+        default: 'us-docker.pkg.dev'
       repo:
         description: Docker repo
         type: string
-        default: "oplabs-tools-artifacts/images"
+        default: 'oplabs-tools-artifacts/images'
     machine:
       image: ubuntu-2204:2022.07.1
       resource_class: xlarge
@@ -280,6 +280,20 @@ jobs:
           command: anvil --fork-url="${ANVIL_L2_FORK_URL:-https://mainnet.optimism.io}"
           working_directory: packages/atst
       - run:
+          name: wait for anvil
+          command: |
+            max_retry=5
+            counter=0
+            until cast block-number --rpc-url http://localhost:8545
+            do
+               sleep 1
+               [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+               echo "Trying again. Try #$counter"
+               ((counter++))
+            done
+            echo ready
+          working_directory: packages/atst
+      - run:
           name: test
           command: yarn test
           no_output_timeout: 5m
@@ -291,7 +305,7 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: contracts-bedrock,hardhat-deploy-config
       - run:
@@ -346,7 +360,7 @@ jobs:
       - image: ethereumoptimism/ci-builder:latest
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: contracts-bedrock,contracts
       - run:
@@ -356,7 +370,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - "node_modules"
+            - 'node_modules'
             - packages/contracts-bedrock
 
   bedrock-echidna-run:
@@ -373,7 +387,7 @@ jobs:
     resource_class: <<parameters.size>>
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: contracts-bedrock,contracts
       - run:
@@ -388,7 +402,7 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: contracts-bedrock,op-bindings
       - run:
@@ -413,7 +427,7 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: <<parameters.package_name>>,<<parameters.dependencies>>
       - run:
@@ -436,7 +450,7 @@ jobs:
       - check-changed:
           patterns: specs/(.*)\.md$
       - run:
-          name: yarn dev deps  # todo: what's the best way to pull in the dependencies for linting? yarn install above is using production env without dev dependencies
+          name: yarn dev deps # todo: what's the best way to pull in the dependencies for linting? yarn install above is using production env without dev dependencies
           command: yarn install --production=false
       - run:
           name: specs toc
@@ -466,7 +480,7 @@ jobs:
       - image: ethereumoptimism/ci-builder:latest
     steps:
       - checkout
-      - attach_workspace: { at: "." }
+      - attach_workspace: { at: '.' }
       - check-changed:
           patterns: packages
       # Note: The below needs to be manually configured whenever we
@@ -607,7 +621,7 @@ jobs:
           working_directory: <<parameters.working_directory>>
       - when:
           condition:
-            equal: [ true, <<parameters.build>> ]
+            equal: [true, <<parameters.build>>]
           steps:
             - run:
                 name: Build
@@ -663,7 +677,7 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ true, <<parameters.deploy>> ]
+              - equal: [true, <<parameters.deploy>>]
           steps:
             - run:
                 name: Bring up the stack
@@ -713,7 +727,7 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ false, <<parameters.deploy>> ]
+              - equal: [false, <<parameters.deploy>>]
           steps:
             - run:
                 name: Bring up the stack
@@ -816,22 +830,22 @@ jobs:
       - checkout
       - unless:
           condition:
-            equal: [ "develop", << pipeline.git.branch >> ]
+            equal: ['develop', << pipeline.git.branch >>]
           steps:
             - run:
                 # Scan changed files in PRs, block on new issues only (existing issues ignored)
                 # Do a full scan when scanning develop, otherwise do an incremental scan.
-                name: "Conditionally set BASELINE env var"
+                name: 'Conditionally set BASELINE env var'
                 command: |
                   echo 'export SEMGREP_BASELINE_REF=${TEMPORARY_BASELINE_REF}' >> $BASH_ENV
       - run:
-          name: "Set environment variables" # for PR comments and in-app hyperlinks to findings
+          name: 'Set environment variables' # for PR comments and in-app hyperlinks to findings
           command: |
             echo 'export SEMGREP_PR_ID=${CIRCLE_PULL_REQUEST##*/}' >> $BASH_ENV
             echo 'export SEMGREP_JOB_URL=$CIRCLE_BUILD_URL' >> $BASH_ENV
             echo 'export SEMGREP_REPO_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME' >> $BASH_ENV
       - run:
-          name: "Semgrep scan"
+          name: 'Semgrep scan'
           command: semgrep ci
 
   go-mod-tidy:
@@ -840,7 +854,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Go mod tidy"
+          name: 'Go mod tidy'
           command: make mod-tidy && git diff --exit-code
 
   hive-test:
@@ -868,7 +882,7 @@ jobs:
       - go/load-cache
       - go/mod-download
       - go/save-cache
-      - run: { command: "go build ." }
+      - run: { command: 'go build .' }
       - run:
           command: |
             ./hive \
@@ -878,7 +892,7 @@ jobs:
       - run:
           command: |
             tar -cvf /tmp/workspace.tgz -C /home/circleci/project /home/circleci/project/workspace
-          name: "Archive workspace"
+          name: 'Archive workspace'
       - store_artifacts:
           path: /tmp/workspace.tgz
           destination: hive-workspace.tgz
@@ -928,56 +942,56 @@ workflows:
           name: actor-tests-tests
           coverage_flag: actor-tests-tests
           package_name: actor-tests
-          dependencies: "(core-utils|sdk)"
+          dependencies: '(core-utils|sdk)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: contracts-periphery-tests
           coverage_flag: contracts-periphery-tests
           package_name: contracts-periphery
-          dependencies: "(contracts|contracts-bedrock|core-utils|hardhat-deploy-config)"
+          dependencies: '(contracts|contracts-bedrock|core-utils|hardhat-deploy-config)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: dtl-tests
           coverage_flag: dtl-tests
           package_name: data-transport-layer
-          dependencies: "(common-ts|contracts|core-utils)"
+          dependencies: '(common-ts|contracts|core-utils)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: chain-mon-tests
           coverage_flag: chain-mon-tests
           package_name: chain-mon
-          dependencies: "(common-ts|contracts-periphery|core-utils|sdk)"
+          dependencies: '(common-ts|contracts-periphery|core-utils|sdk)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: fault-detector-tests
           coverage_flag: fault-detector-tests
           package_name: fault-detector
-          dependencies: "(common-ts|contracts|core-utils|sdk)"
+          dependencies: '(common-ts|contracts|core-utils|sdk)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: message-relayer-tests
           coverage_flag: message-relayer-tests
           package_name: message-relayer
-          dependencies: "(common-ts|core-utils|sdk)"
+          dependencies: '(common-ts|core-utils|sdk)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: replica-healthcheck-tests
           coverage_flag: replica-healthcheck-tests
           package_name: replica-healthcheck
-          dependencies: "(common-ts|core-utils)"
+          dependencies: '(common-ts|core-utils)'
           requires:
             - yarn-monorepo
       - js-lint-test:
           name: sdk-tests
           coverage_flag: sdk-tests
           package_name: sdk
-          dependencies: "(contracts|core-utils)"
+          dependencies: '(contracts|core-utils)'
           requires:
             - yarn-monorepo
       - js-lint-test:
@@ -1074,11 +1088,11 @@ workflows:
       - go-e2e-test:
           name: op-e2e-WS-tests
           module: op-e2e
-          use_http: "false"
+          use_http: 'false'
       - go-e2e-test:
           name: op-e2e-HTTP-tests
           module: op-e2e
-          use_http: "true"
+          use_http: 'true'
       - bedrock-go-tests:
           requires:
             - op-batcher-lint
