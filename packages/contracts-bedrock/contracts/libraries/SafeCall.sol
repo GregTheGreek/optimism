@@ -55,7 +55,7 @@ library SafeCall {
         assembly {
             // Assertion: gasleft() >= ((_minGas + 200) * 64) / 63
             //
-            // Because EIP-150 ensures that, at max, 64/64ths of the remaining gas in the call
+            // Because EIP-150 ensures that, a maximum of 63/64ths of the remaining gas in the call
             // frame may be passed to a subcontext, we need to ensure that the gas will not be
             // truncated to hold this function's invariant: "If a call is performed by
             // `callWithMinGas`, it must receive at least the specified minimum gas limit." In
