@@ -224,7 +224,12 @@ func (eq *EngineQueue) Step(ctx context.Context) error {
 	}
 	outOfData := false
 	if len(eq.safeAttributes) == 0 {
-		eq.origin = eq.prev.Origin()
+		newOrigin := eq.prev.Origin()
+		// Check if the L2 safe head origin is consistent with the new origin
+		if err := eq.verifyNewL1Origin(ctx, newOrigin); err != nil {
+			return err
+		}
+		eq.origin = newOrigin
 		if next, err := eq.prev.NextAttributes(ctx, eq.safeHead); err == io.EOF {
 			outOfData = true
 		} else if err != nil {
@@ -243,6 +248,35 @@ func (eq *EngineQueue) Step(ctx context.Context) error {
 	} else {
 		return nil
 	}
+}
+
+func (eq *EngineQueue) verifyNewL1Origin(ctx context.Context, newOrigin eth.L1BlockRef) error {
+	if newOrigin == eq.origin {
+		return nil
+	}
+	unsafeOrigin := eq.unsafeHead.L1Origin
+	if newOrigin.Number == unsafeOrigin.Number && newOrigin.ID() != unsafeOrigin {
+		return NewResetError(fmt.Errorf("l1 origin was inconsistent with l2 unsafe head origin, need reset to resolve: l1 origin: %v; unsafe origin: %v",
+			newOrigin.ID(), unsafeOrigin))
+	}
+	// Avoid requesting an older block by checking against the parent hash
+	if newOrigin.Number == unsafeOrigin.Number+1 && newOrigin.ParentHash != unsafeOrigin.Hash {
+		return NewResetError(fmt.Errorf("l2 unsafe head origin is no longer canonical, need reset to resolve: canonical hash: %v; unsafe origin hash: %v",
+			newOrigin.ParentHash, unsafeOrigin.Hash))
+	}
+	if newOrigin.Number > unsafeOrigin.Number+1 {
+		// If unsafe origin is further behind new origin, check it's still on the canonical chain.
+		canonical, err := eq.l1Fetcher.L1BlockRefByNumber(ctx, unsafeOrigin.Number)
+		if err != nil {
+			return NewTemporaryError(fmt.Errorf("failed to fetch canonical L1 block at slot: %v; err: %w", unsafeOrigin.Number, err))
+		}
+		if canonical.ID() != unsafeOrigin {
+			eq.log.Error("Resetting due to origin mismatch")
+			return NewResetError(fmt.Errorf("l2 unsafe head origin is no longer canonical, need reset to resolve: canonical: %v; unsafe origin: %v",
+				canonical, unsafeOrigin))
+		}
+	}
+	return nil
 }
 
 // tryFinalizeL2 traverses the past L1 blocks, checks if any has been finalized,
